@@ -5,6 +5,8 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
+	"time"
 
 	"github.com/Yandex-Practicum/go1fl-sprint6-final/internal/service"
 )
@@ -26,7 +28,7 @@ func PostHTML(w http.ResponseWriter, r *http.Request) {
 	r.ParseMultipartForm(10 << 20)
 
 	// получение данных файла и метаданных
-	file, h, err := r.FormFile("myFile")
+	file, headers, err := r.FormFile("myFile")
 	if err != nil {
 		http.Error(w, "error receiving file", http.StatusInternalServerError)
 		return
@@ -38,6 +40,11 @@ func PostHTML(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "error read file data", http.StatusInternalServerError)
 		return
 	}
+	file.Seek(0, 0)
+	// if err != nil {
+	// 	http.Error(w, "error read file data", http.StatusInternalServerError)
+	// 	return
+	// }
 
 	convertedData, err := service.CodeDetection(string(data))
 	if err != nil {
@@ -68,21 +75,21 @@ func PostHTML(w http.ResponseWriter, r *http.Request) {
 	defer root.Close()
 
 	// time.Now().UTC().String()
-	dst, err := root.Create(h.Filename)
+	dst, err := root.Create(time.Now().UTC().Format("20060102_150405") + filepath.Ext(headers.Filename))
 	if err != nil {
 		http.Error(w, "error creating file", http.StatusInternalServerError)
 		return
 	}
 	defer dst.Close()
 
-	written, err := io.Copy(dst, file)
-	if err != nil || written == 0 {
+	_, err = io.Copy(dst, file)
+	if err != nil {
 		http.Error(w, "error write file", http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/plain")
-	w.Header().Set("Accept-Language", "ru,en;q=0.9")
+	w.Header().Set("Content-Type", "text/plain;charset=UTF-8")
+	w.Header().Set("Accept-Language", "ru")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(convertedData))
 }
