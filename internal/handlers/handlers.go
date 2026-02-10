@@ -18,7 +18,7 @@ func GetHTML(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/html")
+	w.Header().Set("Content-Type", "text/plain;charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	w.Write(dataHTML)
 }
@@ -88,7 +88,7 @@ func PostHTML(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/html;charset=UTF-8")
+	w.Header().Set("Content-Type", "text/plain;charset=UTF-8")
 	w.Header().Set("Accept-Language", "ru")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(convertedData))
