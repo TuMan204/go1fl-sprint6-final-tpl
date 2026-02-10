@@ -18,7 +18,7 @@ func GetHTML(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Contyyent-Type", "text/html")
+	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusOK)
 	w.Write(dataHTML)
 }
