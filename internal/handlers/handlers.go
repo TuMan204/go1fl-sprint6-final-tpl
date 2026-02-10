@@ -18,7 +18,7 @@ func GetHTML(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/plain;charset=UTF-8")
+	w.Header().Set("Content-Type", "text/html;charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	w.Write(dataHTML)
 }
@@ -40,7 +40,7 @@ func PostHTML(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "error read file data", http.StatusInternalServerError)
 		return
 	}
-	file.Seek(0, 0)
+	// file.Seek(0, 0)
 	// if err != nil {
 	// 	http.Error(w, "error read file data", http.StatusInternalServerError)
 	// 	return
@@ -61,9 +61,10 @@ func PostHTML(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "error creating directory", http.StatusInternalServerError)
 				return
 			}
+		} else {
+			http.Error(w, "internal error", http.StatusInternalServerError)
+			return
 		}
-		http.Error(w, "internal error", http.StatusInternalServerError)
-		return
 	}
 
 	// открытие директории через root для сохранения файла
@@ -82,13 +83,18 @@ func PostHTML(w http.ResponseWriter, r *http.Request) {
 	}
 	defer dst.Close()
 
-	_, err = io.Copy(dst, file)
+	// _, err = io.Copy(dst, file)
+	// if err != nil {
+	// 	http.Error(w, "error write file", http.StatusInternalServerError)
+	// 	return
+	// }
+	_, err = dst.WriteString(convertedData)
 	if err != nil {
 		http.Error(w, "error write file", http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/plain;charset=UTF-8")
+	w.Header().Set("Content-Type", "text/html;charset=UTF-8")
 	w.Header().Set("Accept-Language", "ru")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(convertedData))
