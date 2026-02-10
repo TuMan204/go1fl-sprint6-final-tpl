@@ -12,9 +12,9 @@ import (
 )
 
 func GetHTML(w http.ResponseWriter, r *http.Request) {
-	dataHTML, err := os.ReadFile("../../index.html")
+	dataHTML, err := os.ReadFile("../index.html")
 	if err != nil {
-		http.Error(w, "couldn't read the html file", http.StatusNotFound)
+		http.Error(w, "couldn't read the html file", http.StatusInternalServerError)
 		return
 	}
 
