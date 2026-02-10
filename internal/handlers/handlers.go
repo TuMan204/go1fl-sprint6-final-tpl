@@ -58,7 +58,7 @@ func PostHTML(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, os.ErrNotExist) {
 			err = os.Mkdir("../uploads", 0755)
 			if err != nil {
-				http.Error(w, "error creating dyrectory", http.StatusInternalServerError)
+				http.Error(w, "error creating directory", http.StatusInternalServerError)
 				return
 			}
 		}
@@ -88,7 +88,7 @@ func PostHTML(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/plain;charset=UTF-8")
+	w.Header().Set("Content-Type", "text/html;charset=UTF-8")
 	w.Header().Set("Accept-Language", "ru")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(convertedData))
