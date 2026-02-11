@@ -16,6 +16,7 @@ func GetHTML(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			http.Error(w, "file not exists", http.StatusNotFound)
+			return
 		}
 	}
 	dataHTML, err := os.ReadFile("../index.html")
