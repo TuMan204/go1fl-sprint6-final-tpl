@@ -12,16 +12,11 @@ import (
 )
 
 func GetHTML(w http.ResponseWriter, r *http.Request) {
-	_, err := os.Stat("index.html")
+	fileName := "index.html"
+
+	dataHTML, err := os.ReadFile(fileName)
 	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			http.Error(w, "file not exists", http.StatusNotFound)
-			return
-		}
-	}
-	dataHTML, err := os.ReadFile("index.html")
-	if err != nil {
-		http.Error(w, "couldn't read the html file", http.StatusInternalServerError)
+		http.Error(w, "couldn't read the html file or file not exist", http.StatusInternalServerError)
 		return
 	}
 
@@ -34,7 +29,7 @@ func PostHTML(w http.ResponseWriter, r *http.Request) {
 	// выделение памяти под содержимое файла
 	r.ParseMultipartForm(10 << 20)
 
-	// получение данных файла и метаданных
+	// получение файла и метаданных
 	file, headers, err := r.FormFile("myFile")
 	if err != nil {
 		http.Error(w, "error receiving file", http.StatusInternalServerError)
@@ -42,17 +37,14 @@ func PostHTML(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
+	// получение данный полученного файла
 	data, err := io.ReadAll(file)
 	if err != nil {
 		http.Error(w, "error read file data", http.StatusInternalServerError)
 		return
 	}
-	// file.Seek(0, 0)
-	// if err != nil {
-	// 	http.Error(w, "error read file data", http.StatusInternalServerError)
-	// 	return
-	// }
 
+	// конвертация данных
 	convertedData, err := service.CodeDetection(string(data))
 	if err != nil {
 		http.Error(w, "error convertion data", http.StatusInternalServerError)
@@ -60,10 +52,10 @@ func PostHTML(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// проверка наличия директории uploads, если ее нет, то создается
-	_, err = os.Stat("../uploads")
+	_, err = os.Stat("uploads")
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			err = os.Mkdir("../uploads", 0755)
+			err = os.Mkdir("uploads", 0755)
 			if err != nil {
 				http.Error(w, "error creating directory", http.StatusInternalServerError)
 				return
@@ -75,14 +67,14 @@ func PostHTML(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// открытие директории через root для сохранения файла
-	root, err := os.OpenRoot("../uploads")
+	root, err := os.OpenRoot("uploads")
 	if err != nil {
 		http.Error(w, "open root directory error", http.StatusInternalServerError)
 		return
 	}
 	defer root.Close()
 
-	// time.Now().UTC().String()
+	// создание файла для записи результата конвертации
 	dst, err := root.Create(time.Now().UTC().Format("20060102_150405") + filepath.Ext(headers.Filename))
 	if err != nil {
 		http.Error(w, "error creating file", http.StatusInternalServerError)
@@ -90,11 +82,7 @@ func PostHTML(w http.ResponseWriter, r *http.Request) {
 	}
 	defer dst.Close()
 
-	// _, err = io.Copy(dst, file)
-	// if err != nil {
-	// 	http.Error(w, "error write file", http.StatusInternalServerError)
-	// 	return
-	// }
+	// запись результата конвертации в файл
 	_, err = dst.WriteString(convertedData)
 	if err != nil {
 		http.Error(w, "error write file", http.StatusInternalServerError)
